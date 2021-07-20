@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+
+<!-- is this still a thing ?
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  -->
+
+    <title>Photo Gallery</title>
+</head>
+<body>
+
+<div id="gallery" class="pswp-gallery">
+    {% gallery config:gallery %}
+        <a href="{{image.original.path}}"
+           data-pswp-width="{{image.original.width}}"
+           data-pswp-height="{{image.original.height}}"
+           data-pswp-srcset="{{image.resized.x200.path}} {{image.resized.x200.width}}w, {{
+                               image.resized.x1000.path}} {{image.resized.x1000.width}}w, {{
+                               image.original.path}} {{image.original.width}}w"
+           target="_blank">
+            <img src="{{image.resized.x200.path}}" alt="{{image.basename}}"/>
+        </a>
+    {% endgallery %}
+</div>
+
+<script type="module" src="gallery.js"></script>
+
+</body>
+</html>

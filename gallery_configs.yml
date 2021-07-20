@@ -1,0 +1,4 @@
+gallery:
+    path: images
+    geometries: [ x200, x1000 ]
+    output_path_format: "%{filepath}-%{width}x%{height}.%{ext}"
