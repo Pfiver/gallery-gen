@@ -12,16 +12,13 @@
 </head>
 <body>
 
-<div id="gallery" class="pswp-gallery">
-    {% gallery config:gallery %}
+<div id="photos" class="pswp-gallery">
+    {% gallery config:photos %}
         <a href="{{image.original.path}}"
            data-pswp-width="{{image.original.width}}"
            data-pswp-height="{{image.original.height}}"
-           data-pswp-srcset="{{image.resized.x200.path}} {{image.resized.x200.width}}w, {{
-                               image.resized.x1000.path}} {{image.resized.x1000.width}}w, {{
-                               image.original.path}} {{image.original.width}}w"
-           target="_blank">
-            <img src="{{image.resized.x200.path}}" alt="{{image.basename}}"/>
+           data-pswp-srcset="{{image.srcset}}" target="_blank">
+            <img src="{{image.resized[0].path}}" alt="{{image.name}}"/>
         </a>
     {% endgallery %}
 </div>

@@ -5,7 +5,7 @@ if (false) {
   // https://photoswipe.com/v5/docs/getting-started/
 
   const lightbox = new PhotoSwipeLightbox({
-    gallerySelector: '#gallery',
+    gallerySelector: '.pswp-gallery',
     childSelector: 'a',
     pswpModule: './photoswipe.esm.js',
     pswpCSS: './photoswipe.css',
@@ -21,7 +21,7 @@ if (false) {
   const pswpContainer = getContainer();
 
   const lightbox = new PhotoSwipeLightbox({
-    gallerySelector: '#gallery',
+    gallerySelector: '.pswp-gallery',
     childSelector: 'a',
     pswpModule: './photoswipe.esm.min.js',
     pswpCSS: './photoswipe.css',
