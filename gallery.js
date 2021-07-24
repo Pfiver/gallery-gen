@@ -35,6 +35,25 @@ if (false) {
 
     preloadFirstSlide: false
   });
+  lightbox.on('uiRegister', function() {
+    lightbox.pswp.ui.registerElement({
+      name: 'custom-caption',
+      order: 9,
+      isButton: false,
+      appendTo: 'root',
+      html: 'Caption text',
+      onInit: (el, pswp) => {
+        lightbox.pswp.on('change', () => {
+          const currSlideElement = lightbox.pswp.currSlide.data.element;
+          let captionHTML = '';
+          if (currSlideElement) {
+            captionHTML = currSlideElement.querySelector('img').getAttribute('alt');
+          }
+          el.innerHTML = captionHTML || '';
+        });
+      }
+    });
+  });
   lightbox.on('close', () => {
     pswpContainer.style.display = 'none';
     if (fullscreenAPI && fullscreenAPI.isFullscreen()) {
@@ -122,3 +141,5 @@ if (false) {
   }
 
 }
+
+// vim: sw=2 ts=2 et

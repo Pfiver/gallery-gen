@@ -18,7 +18,7 @@ YAML.load_file('gallery_conf.yml').each do |gallery, config| data = []
   Dir.glob(File.join(config['path'], "**/*")).select { |path| File.file? path }.each do |path|
     data.push(process(path, config))
   end
-  data.sort_by! { |it| it[:date] }
+  data.compact!.sort_by! { |it| it[:date] }
   data_file = "site/#{gallery}/gallery-data.json"
   STDERR.puts "Writing #{data_file}"
   File.write data_file, JSON.pretty_generate(data)
@@ -35,33 +35,63 @@ BEGIN {
     img = img1.auto_orient
     img1.destroy!
     img.strip! # strip exif data
-    ext = File.extname(path)
-    digest = (Digest::MD5.hexdigest path)[0..10]
+    abs_path = File.expand_path(path)
+    ext = File.extname(path).downcase
+    dig = Digest::MD5.digest path
+    digest = Proquint.encode(dig.unpack 'SS')
     out_dir = config['gallery']
-    out_path = "#{out_dir}/#{digest}-#{img.columns}x#{img.rows}#{ext}"
-    out = { name: File.basename(path, ext), path: path, date: date,
-            original: { path: out_path, width: img.columns, height: img.rows }, resized: [] }
+    original_path = "#{out_dir}/#{digest}#{ext}"
+    out = { name: digest.gsub('-', ' '), path: path, date: date,
+            original: { path: original_path, width: img.columns, height: img.rows }, renditions: [] }
     Dir.chdir("site") do
-      unless File.file? out_path
-        STDERR.puts "    Generating #{out_path}"
-        img.write (out_path) { self.quality = 75; self.interlace = Magick::PlaneInterlace }
-      end
+      File.symlink(abs_path, original_path) unless File.exist? original_path
       config['geometries'].each do |geometry|
-        img.change_geometry(geometry) {|columns, rows, i|
+        img.change_geometry(geometry) do |columns, rows, i|
           rendition_path = "#{out_dir}/#{digest}-#{columns}x#{rows}#{ext}"
-          out[:resized].push({ path: rendition_path, width: columns, height: rows, geometry: geometry })
-          unless File.file? rendition_path
-            STDERR.puts "    Generating #{rendition_path}"
-            r = i.resize(columns, rows)
-            r.write(rendition_path) { self.quality = 75; self.interlace = Magick::PlaneInterlace }
-            r.destroy!
-          end
-        }
+          render(i, rendition_path, columns, rows)
+          out[:renditions].push({ path: rendition_path, width: columns, height: rows, geometry: geometry })
+        end
       end
+      rendition_path = "#{out_dir}/#{digest}-#{img.columns}x#{img.rows}#{ext}"
+      render(img, rendition_path)
+      out[:renditions].push({ path: rendition_path, width: img.columns, height: img.rows, geometry: "100%" })
     end
     img.destroy!
-    out[:srcset] = out[:resized].map { |s| s[:path] + " " + s[:width].to_s + "w, " }.join("") + out[:original][:path] + " " + out[:original][:width].to_s + "w"
+    out[:srcset] = out[:renditions].map { |s| s[:path] + " " + s[:width].to_s + "w" }.join(", ")
     out
+  end
+
+  def render(i, out_path, columns = nil, rows = nil)
+    unless File.file? out_path
+      STDERR.puts "    Generating #{out_path}"
+      i = i.resize(columns, rows) if columns
+      i.write(out_path) { self.quality = 75; self.interlace = Magick::PlaneInterlace }
+      i.destroy! if columns
+    end
+  end
+
+  module Proquint
+    extend self
+
+    CONSONANTS = %w[b d f g h j k l m n p r s t v z]
+    VOWELS = %w[a i o u]
+    REVERSE = {}
+    CONSONANTS.each_with_index { |c, i| REVERSE[c] = i }
+    VOWELS.each_with_index { |c, i| REVERSE[c] = i }
+
+    # Convert an array of uint16s to a proquint
+    def encode(shorts, sep = "-")
+      shorts.map do |s|
+        raise ArgumentError.new("Can't encode negative numbers") if s < 0
+        raise ArgumentError.new("Can't encode numbers > 16 bits") if s > 0xffff
+        CONSONANTS[(s & 0xf000) >> 12] +
+            VOWELS[(s & 0x0c00) >> 10] +
+        CONSONANTS[(s & 0x03c0) >>  6] +
+            VOWELS[(s & 0x0030) >>  4] +
+        CONSONANTS[ s & 0x000f]
+      end
+      .join(sep)
+    end
   end
 }
 

@@ -2,12 +2,8 @@
 <html>
 <head>
     <meta charset="utf-8"/>
-
-<!-- is this still a thing ?
-    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  -->
-
+    <meta name="viewport" content="width=1280, initial-scale=1"/>
+     <link rel="stylesheet" href="gallery.css"> 
     <title>Photo Gallery</title>
 </head>
 <body>
@@ -18,7 +14,7 @@
            data-pswp-width="{{image.original.width}}"
            data-pswp-height="{{image.original.height}}"
            data-pswp-srcset="{{image.srcset}}" target="_blank">
-            <img src="{{image.resized[0].path}}" alt="{{image.name}}"/>
+            <img src="{{image.renditions[0].path}}" alt="{{image.name}}"/>
         </a>
     {% endgallery %}
 </div>

@@ -1,0 +1,9 @@
+.pswp__custom-caption {
+  position: absolute;
+  color: white;
+  font-size: 16pt;
+  text-shadow: 0 0 5pt black;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+}
