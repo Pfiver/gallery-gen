@@ -60,6 +60,11 @@ if (false) {
       fullscreenAPI.exit();
     }
   });
+  document.addEventListener('fullscreenchange', (event) => {
+    if (!document.fullscreenElement) {
+      lightbox.pswp.close();
+    }
+  });
   lightbox.init();
 
   function getFullscreenAPI() {
@@ -87,19 +92,19 @@ if (false) {
     if (enterFS) {
       api = {
         request: function (el) {
-    if (enterFS === 'webkitRequestFullscreen') {
-      el[enterFS](Element.ALLOW_KEYBOARD_INPUT);
-    } else {
-      el[enterFS]();
-    }
+          if (enterFS === 'webkitRequestFullscreen') {
+            el[enterFS](Element.ALLOW_KEYBOARD_INPUT);
+          } else {
+            el[enterFS]();
+          }
         },
 
         exit: function () {
-    return document[exitFS]();
+          return document[exitFS]();
         },
 
         isFullscreen: function () {
-    return document[elementFS];
+          return document[elementFS];
         },
 
         change: changeEvent,
@@ -122,7 +127,7 @@ if (false) {
         pswpContainer.style.display = 'block';
         // delay to make sure that browser fullscreen animation is finished
         setTimeout(function() {
-    resolve();
+          resolve();
         }, 300);
       }, { once: true });
 
