@@ -1,3 +1,5 @@
-photos:
+title:
+    Milos 2021
+gallery:
     path: photos
     geometries: [ x200, x1000 ]

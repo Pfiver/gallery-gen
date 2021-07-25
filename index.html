@@ -4,12 +4,12 @@
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <link rel="stylesheet" href="gallery.css"/>
-    <title>Photo Gallery</title>
+    <title>{{title}}</title>
 </head>
 <body>
 
 <div id="photos" class="pswp-gallery">
-    {% gallery config:photos %}
+    {% gallery %}
         <a href="{{image.original.path}}"
            data-pswp-width="{{image.original.width}}"
            data-pswp-height="{{image.original.height}}"

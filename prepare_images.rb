@@ -8,21 +8,22 @@ require 'fileutils'
 
 require 'rmagick'
 
-YAML.load_file('gallery_conf.yml').each do |gallery, config| data = []
-  config['gallery'] = gallery
-  out_dir = "site/" + gallery
-  unless Dir.exist?(out_dir)
-    STDERR.puts "Creating output directory #{out_dir}"
-    FileUtils.mkdir_p(out_dir)
-  end
-  Dir.glob(File.join(config['path'], "**/*")).select { |path| File.file? path }.each do |path|
-    data.push(process(path, config))
-  end
-  data.compact!.sort_by! { |it| it[:date] }
-  data_file = "site/#{gallery}/gallery-data.json"
-  STDERR.puts "Writing #{data_file}"
-  File.write data_file, JSON.pretty_generate(data)
+config = YAML.load_file('gallery_conf.yml')['gallery']
+out_dir = "site/" + config['path']
+
+unless Dir.exist?(out_dir)
+  STDERR.puts "Creating output directory #{out_dir}"
+  FileUtils.mkdir_p(out_dir)
 end
+
+data = []
+Dir.glob(File.join(config['path'], "**/*")).select { |path| File.file? path }.each do |path|
+  data.push(process(path, config))
+end
+data.compact!.sort_by! { |it| it[:date] }
+data_file = "site/#{gallery}/gallery-data.json"
+STDERR.puts "Writing #{data_file}"
+File.write data_file, JSON.pretty_generate(data)
 
 BEGIN {
   def process(path, config)
@@ -39,7 +40,7 @@ BEGIN {
     ext = File.extname(path).downcase
     dig = Digest::MD5.digest path
     digest = Proquint.encode(dig.unpack 'SS')
-    out_dir = config['gallery']
+    out_dir = config['path']
     original_path = "#{out_dir}/#{digest}#{ext}"
     out = { name: digest.gsub('-', ' '), path: path, date: date,
             original: { path: original_path, width: img.columns, height: img.rows }, renditions: [] }
@@ -82,7 +83,7 @@ BEGIN {
     # Convert an array of uint16s to a proquint
     def encode(shorts, sep = "-")
       shorts.map do |s|
-        raise ArgumentError.new("Can't encode negative numbers") if s < 0
+        raise ArgumentError.new("Can't encode negative numbers" ) if s < 0x0000
         raise ArgumentError.new("Can't encode numbers > 16 bits") if s > 0xffff
         CONSONANTS[(s & 0xf000) >> 12] +
             VOWELS[(s & 0x0c00) >> 10] +
