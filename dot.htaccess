@@ -1,5 +1,0 @@
-RewriteEngine On
-
-RewriteCond %{REQUEST_FILENAME}.html -f
-RewriteCond %{REQUEST_FILENAME} !"\."
-RewriteRule .* $0.html

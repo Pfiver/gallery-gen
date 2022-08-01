@@ -1,31 +1,14 @@
 import PhotoSwipeLightbox from './photoswipe-lightbox.esm.min.js';
 
-if (false) {
+// https://photoswipe.com/v5/docs/native-fullscreen-on-open/
 
-  // https://photoswipe.com/v5/docs/getting-started/
+const fullscreenAPI = getFullscreenAPI();
+const pswpContainer = getContainer();
 
-  const lightbox = new PhotoSwipeLightbox({
-    gallerySelector: '.pswp-gallery',
-    childSelector: 'a',
-    pswpModule: './photoswipe.esm.js',
-    pswpCSS: './photoswipe.css',
-    bgOpacity: 0.95
-  });
-  lightbox.init();
-
-} else {
-
-  // https://photoswipe.com/v5/docs/native-fullscreen-on-open/
-
-  const fullscreenAPI = getFullscreenAPI();
-  const pswpContainer = getContainer();
-
-  const lightbox = new PhotoSwipeLightbox({
-    gallerySelector: '.pswp-gallery',
-    childSelector: 'a',
-    pswpModule: './photoswipe.esm.min.js',
-    pswpCSS: './photoswipe.css',
-    bgOpacity: 0.95,
+const lightbox = new PhotoSwipeLightbox({
+    pswpModule: () => import('./photoswipe.esm.min.js'),
+    gallery: '.pswp-gallery',
+    children: 'a',
 
     openPromise: getFullscreenPromise,
     appendToEl: fullscreenAPI ? pswpContainer : document.body,
@@ -34,40 +17,40 @@ if (false) {
     hideAnimationDuration: 0,
 
     preloadFirstSlide: false
-  });
-  lightbox.on('uiRegister', function() {
+});
+lightbox.on('uiRegister', function () {
     lightbox.pswp.ui.registerElement({
-      name: 'custom-caption',
-      order: 9,
-      isButton: false,
-      appendTo: 'root',
-      html: 'Caption text',
-      onInit: (el, pswp) => {
-        lightbox.pswp.on('change', () => {
-          const currSlideElement = lightbox.pswp.currSlide.data.element;
-          let captionHTML = '';
-          if (currSlideElement) {
-            captionHTML = currSlideElement.querySelector('img').getAttribute('alt');
-          }
-          el.innerHTML = captionHTML || '';
-        });
-      }
+        name: 'image-id',
+        order: 6,
+        isButton: false,
+        appendTo: 'bar',
+        onInit: (el, pswp) => {
+            lightbox.pswp.on('change', () => {
+                let id = '';
+                const currSlide = lightbox.pswp.currSlide.data.element;
+                if (currSlide) {
+                    id = currSlide.querySelector('img').getAttribute('alt');
+                }
+                el.innerHTML = id;
+            });
+        }
     });
-  });
-  lightbox.on('close', () => {
+});
+lightbox.on('close', () => {
     pswpContainer.style.display = 'none';
     if (fullscreenAPI && fullscreenAPI.isFullscreen()) {
-      fullscreenAPI.exit();
+        fullscreenAPI.exit();
     }
-  });
-  document.addEventListener('fullscreenchange', (event) => {
+});
+document.addEventListener('fullscreenchange', (event) => {
     if (!document.fullscreenElement) {
-      lightbox.pswp.close();
+        lightbox.pswp.close();
     }
-  });
-  lightbox.init();
+});
+lightbox.init();
 
-  function getFullscreenAPI() {
+
+function getFullscreenAPI() {
     let api;
     let enterFS;
     let exitFS;
@@ -76,66 +59,56 @@ if (false) {
     let errorEvent;
 
     if (document.documentElement.requestFullscreen) {
-      enterFS = 'requestFullscreen';
-      exitFS = 'exitFullscreen';
-      elementFS = 'fullscreenElement';
-      changeEvent = 'fullscreenchange';
-      errorEvent = 'fullscreenerror';
+        enterFS = 'requestFullscreen';
+        exitFS = 'exitFullscreen';
+        elementFS = 'fullscreenElement';
+        changeEvent = 'fullscreenchange';
+        errorEvent = 'fullscreenerror';
     } else if (document.documentElement.webkitRequestFullscreen) {
-      enterFS = 'webkitRequestFullscreen';
-      exitFS = 'webkitExitFullscreen';
-      elementFS = 'webkitFullscreenElement';
-      changeEvent = 'webkitfullscreenchange';
-      errorEvent = 'webkitfullscreenerror';
+        enterFS = 'webkitRequestFullscreen';
+        exitFS = 'webkitExitFullscreen';
+        elementFS = 'webkitFullscreenElement';
+        changeEvent = 'webkitfullscreenchange';
+        errorEvent = 'webkitfullscreenerror';
     }
 
     if (enterFS) {
-      api = {
-        request: function (el) {
-          if (enterFS === 'webkitRequestFullscreen') {
-            el[enterFS](Element.ALLOW_KEYBOARD_INPUT);
-          } else {
-            el[enterFS]();
-          }
-        },
-
-        exit: function () {
-          return document[exitFS]();
-        },
-
-        isFullscreen: function () {
-          return document[elementFS];
-        },
-
-        change: changeEvent,
-        error: errorEvent
-      };
+        api = {
+            request: function (el) {
+                if (enterFS === 'webkitRequestFullscreen') {
+                    el[enterFS](Element.ALLOW_KEYBOARD_INPUT);
+                } else {
+                    el[enterFS]();
+                }
+            },
+            exit: function () {
+                return document[exitFS]();
+            },
+            isFullscreen: function () {
+                return document[elementFS];
+            },
+            change: changeEvent,
+            error: errorEvent
+        };
     }
-
     return api;
-  };
+}
 
-
-  function getFullscreenPromise() {
+function getFullscreenPromise() {
     return new Promise((resolve) => {
-      if (!fullscreenAPI || fullscreenAPI.isFullscreen()) {
-        resolve();
-        return;
-      }
-
-      document.addEventListener(fullscreenAPI.change, (event) => {
-        pswpContainer.style.display = 'block';
-        // delay to make sure that browser fullscreen animation is finished
-        setTimeout(function() {
-          resolve();
-        }, 300);
-      }, { once: true });
-
-      fullscreenAPI.request(pswpContainer);
+        if (!fullscreenAPI || fullscreenAPI.isFullscreen()) {
+            resolve();
+            return;
+        }
+        document.addEventListener(fullscreenAPI.change, (event) => {
+            pswpContainer.style.display = 'block';
+            resolve();
+        }, {once: true});
+        fullscreenAPI.request(pswpContainer);
     });
-  }
+}
 
-  function getContainer() {
+function getContainer() {
     const pswpContainer = document.createElement('div');
     pswpContainer.style.background = '#000';
     pswpContainer.style.width = '100%';
@@ -143,8 +116,16 @@ if (false) {
     pswpContainer.style.display = 'none';
     document.body.appendChild(pswpContainer);
     return pswpContainer;
-  }
-
 }
+
+function addStylesheet(path) {
+    let css = document.createElement("link");
+    css.rel = "stylesheet";
+    css.href = "photoswipe.css";
+    document.body.appendChild(css);
+}
+
+addStylesheet("gallery.css");
+addStylesheet("photoswipe.css");
 
 // vim: sw=2 ts=2 et
