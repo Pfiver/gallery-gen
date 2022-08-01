@@ -1,12 +1,12 @@
 Gem::Specification.new do |s|
   s.name        = "gallery_generator"
-  s.version     = "1.0.0"
+  s.version     = "1.0.1"
 
   s.summary     = "Gallery-Generator"
   s.description = "Quickly generate a mobile-ready photo gallery from a directory of images."
   s.authors     = ["Patrick Pfeifer"]
   s.email       = "patrick@patrickpfeifer.net"
-  s.homepage    = "https://rubygems.org/gems/gallery_generator"
+  s.homepage    = "https://github.com/Pfiver/gallery-generator"
 
   s.license     = "MIT"
 
