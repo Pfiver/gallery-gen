@@ -1,0 +1,21 @@
+PATH
+  remote: .
+  specs:
+    gallery_generator (1.0.1)
+      liquid (~> 5.3.0)
+      rmagick (~> 4.2.6)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    liquid (5.3.0)
+    rmagick (4.2.6)
+
+PLATFORMS
+  universal-darwin-21
+
+DEPENDENCIES
+  gallery_generator!
+
+BUNDLED WITH
+   2.3.19
