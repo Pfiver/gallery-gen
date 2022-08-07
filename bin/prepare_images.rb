@@ -15,19 +15,26 @@ out_file = out_dir + "/gallery-data.json"
 data = {}
 config['galleries'].each do |name, gallery|
   next unless gallery.class == Hash
-  data[name] = gallery
-  next unless gallery['path']
-  out_path = out_dir + "/" + gallery['path']
-  unless Dir.exist?(out_path)
-    STDERR.puts "Creating output directory #{out_path}"
-    FileUtils.mkdir_p(out_path)
+  if gallery['parent']
+    gallery = data[gallery['parent']].merge(gallery)
   end
-  images = []
-  data[name].merge!({ 'images': images })
-  Dir.glob(File.join(gallery['path'], "**/*"))
-     .select { |path| File.file? path }
-     .each { |path| images.push(process(path, gallery)) }
-  images.sort_by! { |it| it[:date] }
+  data[name] = gallery
+  unless gallery[:images]
+    out_path = out_dir + "/" + gallery['path']
+    unless Dir.exist?(out_path)
+      STDERR.puts "Creating output directory #{out_path}"
+      FileUtils.mkdir_p(out_path)
+    end
+    images = []
+    data[name].merge!({ :images => images })
+    Dir.glob(File.join(gallery['path'], "**/*"))
+       .select { |path| File.file? path }
+       .each { |path| images.push(process(path, gallery)) }
+    images.sort_by! { |it| it[:date] }
+  end
+  if gallery['selection']
+    gallery[:images].select! { |i| gallery['selection'].include? i[:name] }
+  end
 end
 STDERR.puts "Writing #{out_file}"
 File.write out_file, JSON.pretty_generate(data)

@@ -29,12 +29,6 @@ BEGIN {
   def get_gallery(name)
     gallery = $data[name]
     gallery['name'] = name
-    if gallery['parent']
-      gallery = $data[gallery['parent']].merge(gallery)
-    end
-    if gallery['selection']
-      gallery['images'].select! { |i| gallery['selection'].include? i['name'] }
-    end
     gallery
   end
 
