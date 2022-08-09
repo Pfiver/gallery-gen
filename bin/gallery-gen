@@ -8,7 +8,21 @@ require 'fileutils'
 
 require 'rmagick'
 
-config = YAML.load_file '_config.yml'
+begin
+  config = YAML.load_file '_config.yml'
+rescue
+  print "Config file not found. Do you want to create an example site ? [Y/n] "
+  reply = gets
+  if not reply or reply.downcase.start_with? "y"
+    gem_dir = Pathname.new(__dir__ + "/..").realpath.to_s
+    FileUtils.cp_r File.join(gem_dir, 'example_site'), 'example_site', verbose: true
+    puts
+    puts "Copied example site to 'example_site'."
+    puts "Now you can 'cd' into it and run 'gallery-gen' again."
+    puts
+  end
+  return
+end
 
 data_dir = "_data"
 $site_dir = "_site"
@@ -32,6 +46,10 @@ STDERR.puts "Copying assets to #{galleries_out_dir}"
 gem_dir = Pathname.new(__dir__ + "/..").realpath.to_s
 Dir.glob(%w(gallery.{css,js} PhotoSwipe/dist/*.{css,min.js}), base: gem_dir)
    .each { |path| FileUtils.cp File.join(gem_dir, path), galleries_out_dir, verbose: true }
+
+puts
+puts "  Gallery generated. Now try $ jekyll serve -o"
+puts
 
 BEGIN {
   def process_gallery(gallery_data, gallery)

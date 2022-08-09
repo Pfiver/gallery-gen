@@ -1,4 +1,4 @@
 dev:
 	rm -rf _site
-	../bin/gallery-generator
+	../bin/gallery-gen
 	jekyll build

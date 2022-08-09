@@ -9,16 +9,16 @@
 .gallery > a > img {
   max-width: 1270px;
 }
-@media only screen and (max-width: 1280px) {
-  .gallery > a > img {
-    max-height: 100px;
-    max-width: 390px;
-  }
-}
 @media only screen and (max-width: 400px) {
   .gallery > a > img {
     max-height: 50px;
     max-width: 200px;
+  }
+}
+@media only screen and (max-width: 1280px) {
+  .gallery > a > img {
+    max-height: 100px;
+    max-width: 390px;
   }
 }
 
