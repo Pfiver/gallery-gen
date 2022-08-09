@@ -1,27 +1,30 @@
+---
+---
+
 <!doctype html>
 <html lang="en">
 <head>
     <meta charset="utf-8"/>
-    <title>{{page_title}}</title>
-    <link rel="stylesheet" href="gallery.css"/>
+    <title>{{ site.title }}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
 </head>
 <body>
 
-{% galleries %}
-    <h3>{{gallery.title}}</h3>
-    <div id="{{gallery.name}}-gallery" class="pswp-gallery">
-        {% images %}
-            <a href="{{image.original.path}}"
-               target="_blank" data-pswp-width="{{image.original.width}}" data-pswp-height="{{image.original.height}}"
-               data-pswp-srcset="{{image.srcset}}">
-               <img src="{{image.renditions[0].path}}" alt="{{image.name}}"/>
-            </a>
-        {% endimages %}
-    </div>
-{% endgalleries %}
+{% for gallery in site.data.gallery-data %}
+<h3>{{gallery.title}}</h3>
+<div id="{{gallery.name}}-gallery" class="gallery">
+    {% for image in gallery.images %}
+    <a href="{{image.original.path}}"
+       target="_blank" data-gallery-image-id="{{image.id}}" data-gallery-image-name="{{image.name}}"
+       data-pswp-width="{{image.original.width}}" data-pswp-height="{{image.original.height}}"
+       data-pswp-srcset="{{image.srcset}}">
+        <img src="{{image.renditions[0].path}}" alt="{{image.name}}"/>
+    </a>
+    {% endfor %}
+</div>
+{% endfor %}
 
-<script type="module" src="gallery.js"></script>
+<script type="module" src="galleries/gallery.js"></script>
 
 </body>
 </html>

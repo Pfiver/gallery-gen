@@ -1,32 +1,33 @@
-.pswp-gallery {
+.gallery {
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
 }
-.pswp-gallery > a {
+.gallery > a {
   line-height: 0;
 }
-.pswp-gallery > a > img {
+.gallery > a > img {
   max-width: 1270px;
 }
 @media only screen and (max-width: 1280px) {
-  .pswp-gallery > a > img {
+  .gallery > a > img {
     max-height: 100px;
     max-width: 390px;
   }
 }
 @media only screen and (max-width: 400px) {
-  .pswp-gallery > a > img {
+  .gallery > a > img {
     max-height: 50px;
     max-width: 200px;
   }
 }
 
-.pswp__image-id {
+.gallery-image-id {
   color: white;
   opacity: 0.85;
   height: 30px;
   line-height: 30px;
   margin: 15px 0 0 9px;
+  font-size: 14px; /* smaller, as image seq nr. */
   text-shadow: 1px 1px 3px var(--pswp-icon-color-secondary);
 }

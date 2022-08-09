@@ -7,7 +7,7 @@ const pswpContainer = getContainer();
 
 const lightbox = new PhotoSwipeLightbox({
     pswpModule: () => import('./photoswipe.esm.min.js'),
-    gallery: '.pswp-gallery',
+    gallery: '.gallery',
     children: 'a',
 
     openPromise: getFullscreenPromise,
@@ -21,17 +21,16 @@ const lightbox = new PhotoSwipeLightbox({
 lightbox.on('uiRegister', function () {
     lightbox.pswp.ui.registerElement({
         name: 'image-id',
+        className: 'gallery-image-id',
         order: 6,
         isButton: false,
         appendTo: 'bar',
         onInit: (el, pswp) => {
             lightbox.pswp.on('change', () => {
-                let id = '';
                 const currSlide = lightbox.pswp.currSlide.data.element;
                 if (currSlide) {
-                    id = currSlide.querySelector('img').getAttribute('alt');
+                    el.innerHTML = currSlide.getAttribute('data-gallery-image-id');
                 }
-                el.innerHTML = id;
             });
         }
     });
@@ -121,8 +120,10 @@ function getContainer() {
 function addStylesheet(path) {
     let css = document.createElement("link");
     css.rel = "stylesheet";
-    css.href = "photoswipe.css";
+    let url = new URL(path, import.meta.url);
+    css.href = url.href;
     document.body.appendChild(css);
+    new URL("gallery.css", import.meta.url)
 }
 
 addStylesheet("gallery.css");

@@ -1,0 +1,138 @@
+#!/usr/bin/env ruby
+
+require 'json'
+require 'yaml'
+require 'digest'
+require 'pathname'
+require 'fileutils'
+
+require 'rmagick'
+
+config = YAML.load_file '_config.yml'
+
+data_dir = "_data"
+$site_dir = "_site"
+$galleries_dir = "galleries"
+galleries_out_dir = File.join $site_dir, $galleries_dir
+
+gallery_data = []
+config['galleries']
+  .select { |k, v| v.class == Hash }
+  .each do |name, gallery|
+  gallery[:name] = name
+  gallery_data.push process_gallery gallery_data, gallery
+end
+
+makedir data_dir
+STDERR.puts "Writing #{data_dir + "/gallery-data.json"}"
+File.write data_dir + "/gallery-data.json", JSON.pretty_generate(gallery_data)
+
+makedir galleries_out_dir
+STDERR.puts "Copying assets to #{galleries_out_dir}"
+gem_dir = Pathname.new(__dir__ + "/..").realpath.to_s
+Dir.glob(%w(gallery.{css,js} PhotoSwipe/dist/*.{css,min.js}), base: gem_dir)
+   .each { |path| FileUtils.cp File.join(gem_dir, path), galleries_out_dir, verbose: true }
+
+BEGIN {
+  def process_gallery(gallery_data, gallery)
+    if gallery['parent']
+      parent = gallery_data.find { |g| g[:name] == gallery['parent'] }
+      gallery = parent.merge gallery
+    end
+    unless gallery[:images]
+      gallery_dir = File.join $galleries_dir, gallery[:name]
+      makedir File.join $site_dir, gallery_dir
+      images = Dir.glob(File.join(gallery_dir, "**/*"))
+                  .select { |path| File.file? path }
+                  .map { |path| process_image gallery, path }
+      images.sort_by! { |it| it[:date] }
+      gallery[:images] = images
+    end
+    if gallery['selection']
+      gallery[:images] =
+        gallery[:images].select { |i| gallery['selection'].include? i[:id] }
+    end
+    gallery
+  end
+
+  def process_image(gallery, img_path)
+    STDERR.puts "Processing #{img_path}"
+    img1 = Magick::Image::read(img_path).first
+    date1 = img1.get_exif_by_entry('DateTimeOriginal')[0][1]
+    if date1
+      date = DateTime.strptime(date1, '%Y:%m:%d %H:%M:%S')
+      # STDERR.puts "    Date: #{date}"
+    else
+      date = 0
+    end
+    img = img1.auto_orient
+    img1.destroy!
+    img.strip! # strip exif data
+    abs_path = File.expand_path(img_path)
+    ext = File.extname(img_path).downcase
+    dig = Digest::MD5.digest img.to_blob
+    digest = Proquint.encode(dig.unpack 'SS')
+    out_dir = File.join $galleries_dir, gallery[:name]
+    orig_link = "#{out_dir}/#{digest}#{ext}"
+    out = { id: digest, name: File.basename(img_path, ".*"), path: img_path, date: date,
+            original: { path: orig_link, width: img.columns, height: img.rows }, renditions: [] }
+    Dir.chdir($site_dir) do
+      relorig = Pathname.new(abs_path).relative_path_from(File.expand_path(out_dir))
+      File.symlink(relorig.to_s, orig_link) unless File.exist? orig_link
+      gallery['geometries'].each do |geometry|
+        img.change_geometry(geometry) do |columns, rows, i|
+          rendition_path = "#{out_dir}/#{digest}-#{columns}x#{rows}#{ext}"
+          render(i, rendition_path, columns, rows)
+          out[:renditions].push({ path: rendition_path, width: columns, height: rows, geometry: geometry })
+        end
+      end
+      rendition_path = "#{out_dir}/#{digest}-#{img.columns}x#{img.rows}#{ext}"
+      render(img, rendition_path)
+      out[:renditions].push({ path: rendition_path, width: img.columns, height: img.rows, geometry: "100%" })
+    end
+    img.destroy!
+    out[:srcset] = out[:renditions].map { |s| s[:path] + " " + s[:width].to_s + "w" }.join(", ")
+    out
+  end
+
+  def render(i, out_path, columns = nil, rows = nil)
+    unless File.file? out_path
+      STDERR.puts "    Generating #{out_path}"
+      i = i.resize(columns, rows) if columns
+      i.write(out_path) { |img| img.quality = 75; img.interlace = Magick::PlaneInterlace }
+      i.destroy! if columns
+    end
+  end
+
+  def makedir(out_path)
+    unless Dir.exist?(out_path)
+      STDERR.puts "Creating output directory #{out_path}"
+      FileUtils.mkdir_p(out_path)
+    end
+  end
+
+  module Proquint
+    extend self
+
+    CONSONANTS = %w[b d f g j k l m n p r s t v x z]
+    VOWELS = %w[a i o u]
+    REVERSE = {}
+    CONSONANTS.each_with_index { |c, i| REVERSE[c] = i }
+    VOWELS.each_with_index { |c, i| REVERSE[c] = i }
+
+    # Convert an array of uint16s to a proquint
+    def encode(shorts, sep = "-")
+      shorts.map do |s|
+        raise ArgumentError.new("Can't encode negative numbers") if s < 0x0000
+        raise ArgumentError.new("Can't encode numbers > 16 bits") if s > 0xffff
+        CONSONANTS[(s & 0xf000) >> 12] +
+          VOWELS[(s & 0x0c00) >> 10] +
+          CONSONANTS[(s & 0x03c0) >> 6] +
+          VOWELS[(s & 0x0030) >> 4] +
+          CONSONANTS[s & 0x000f]
+      end.join sep
+    end
+  end
+}
+
+# vim: sw=2 ts=2 et
