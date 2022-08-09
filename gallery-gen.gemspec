@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = "gallery-gen"
-  s.version     = "1.0.1"
+  s.version     = "1.0.3"
 
   s.summary     = "Gallery-Generator"
   s.description = "Quickly generate a mobile-ready photo gallery from a directory of images."

@@ -34,6 +34,21 @@ lightbox.on('uiRegister', function () {
             });
         }
     });
+    lightbox.pswp.ui.registerElement({
+        name: 'image-caption',
+        className: 'gallery-image-caption',
+        order: 9,
+        isButton: false,
+        appendTo: 'root',
+        onInit: (el, pswp) => {
+            lightbox.pswp.on('change', () => {
+                const currSlide = lightbox.pswp.currSlide.data.element;
+                if (currSlide) {
+                    el.innerHTML = currSlide.getAttribute('data-gallery-image-name');
+                }
+            });
+        }
+    });
 });
 lightbox.on('close', () => {
     pswpContainer.style.display = 'none';

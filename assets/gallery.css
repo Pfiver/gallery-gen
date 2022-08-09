@@ -23,11 +23,23 @@
 }
 
 .gallery-image-id {
-  color: white;
-  opacity: 0.85;
   height: 30px;
   line-height: 30px;
   margin: 15px 0 0 9px;
+
+  color: white;
+  opacity: 0.85;
   font-size: 14px; /* smaller, as image seq nr. */
+  text-shadow: 1px 1px 3px var(--pswp-icon-color-secondary);
+}
+
+.gallery-image-caption {
+  position: absolute;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+
+  color: white;
+  font-size: 141%;
   text-shadow: 1px 1px 3px var(--pswp-icon-color-secondary);
 }
