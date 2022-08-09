@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = "gallery-gen"
-  s.version     = "1.0.0"
+  s.version     = "1.0.1"
 
   s.summary     = "Gallery-Generator"
   s.description = "Quickly generate a mobile-ready photo gallery from a directory of images."
@@ -13,5 +13,9 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "jekyll", ["~> 4.2.2"]
 
   s.executables .push "gallery-gen"
-  s.files       .push *Dir.glob(%w(gallery.{css,js} PhotoSwipe/dist/*.{css,min.js}))
+  s.files       .push *Dir.glob(%w(
+    example_site/**/*
+    assets/gallery.{css,js}
+    PhotoSwipe/dist/*.{css,min.js}
+  ))
 end

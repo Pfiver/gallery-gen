@@ -44,7 +44,7 @@ File.write data_dir + "/gallery-data.json", JSON.pretty_generate(gallery_data)
 makedir galleries_out_dir
 STDERR.puts "Copying assets to #{galleries_out_dir}"
 gem_dir = Pathname.new(__dir__ + "/..").realpath.to_s
-Dir.glob(%w(gallery.{css,js} PhotoSwipe/dist/*.{css,min.js}), base: gem_dir)
+Dir.glob(%w(assets/gallery.{css,js} PhotoSwipe/dist/*.{css,min.js}), base: gem_dir)
    .each { |path| FileUtils.cp File.join(gem_dir, path), galleries_out_dir, verbose: true }
 
 puts
