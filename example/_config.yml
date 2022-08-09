@@ -1,0 +1,20 @@
+title: Sample Gallery
+
+exclude: [ galleries ]
+keep_files: [ galleries ]
+
+galleries:
+  bumthang:
+    title: Bumthang
+    geometries: [ x200 ]
+
+  selected_photos:
+    title: Selection of Photos
+    parent: bumthang
+    selection:
+      - rusij-sizov
+      - savud-bagom
+
+  surroundings:
+    title: Surroundings
+    geometries: [ x200 ]
