@@ -10,5 +10,5 @@ Usage:
 
     $ gallery-gen
 
-	$ jekyll build
+    $ jekyll build
     $ jekyll serve
