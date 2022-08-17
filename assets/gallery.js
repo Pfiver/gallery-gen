@@ -2,15 +2,16 @@ import PhotoSwipeLightbox from './photoswipe-lightbox.esm.min.js';
 
 // https://photoswipe.com/v5/docs/native-fullscreen-on-open/
 
-const fullscreenAPI = getFullscreenAPI();
-const pswpContainer = getContainer();
+const fullscreenAPI = getFullscreenAPI(); // not available on iPhone
+const pswpContainer = fullscreenAPI ? getContainer() : null;
 
 const lightbox = new PhotoSwipeLightbox({
     pswpModule: () => import('./photoswipe.esm.min.js'),
     gallery: '.gallery',
     children: 'a',
+    bgOpacity: 1,
 
-    openPromise: getFullscreenPromise,
+    openPromise:  fullscreenAPI ? enterFullscreen : null,
     appendToEl: fullscreenAPI ? pswpContainer : document.body,
 
     showAnimationDuration: 0,
@@ -50,12 +51,14 @@ lightbox.on('uiRegister', function () {
         }
     });
 });
-lightbox.on('close', () => {
-    pswpContainer.style.display = 'none';
-    if (fullscreenAPI && fullscreenAPI.isFullscreen()) {
-        fullscreenAPI.exit();
-    }
-});
+if (fullscreenAPI) {
+    lightbox.on('close', () => {
+        pswpContainer.style.display = 'none';
+        if (fullscreenAPI.isFullscreen()) {
+            fullscreenAPI.exit();
+        }
+    });
+}
 document.addEventListener('fullscreenchange', (event) => {
     if (!document.fullscreenElement) {
         lightbox.pswp.close();
@@ -108,9 +111,9 @@ function getFullscreenAPI() {
     return api;
 }
 
-function getFullscreenPromise() {
+function enterFullscreen() {
     return new Promise((resolve) => {
-        if (!fullscreenAPI || fullscreenAPI.isFullscreen()) {
+        if (fullscreenAPI.isFullscreen()) {
             resolve();
             return;
         }
