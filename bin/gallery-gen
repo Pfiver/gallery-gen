@@ -5,6 +5,7 @@ require 'yaml'
 require 'digest'
 require 'pathname'
 require 'fileutils'
+require 'date'
 
 require 'rmagick'
 
@@ -61,9 +62,9 @@ BEGIN {
       gallery_dir = File.join $galleries_dir, gallery[:name]
       makedir File.join $site_dir, gallery_dir
       images = Dir.glob(File.join(gallery_dir, "**/*"))
-                  .select { |path| File.file? path }
+                  .select { |path| File.file? path }.sort
                   .map { |path| process_image gallery, path }
-      images.sort_by! { |it| it[:date] }
+      # images.sort_by! { |it| it[:date] }
       gallery[:images] = images
     end
     if gallery['selection']
